@@ -41,6 +41,7 @@ export default function ChatWidget({
   auto_focus = true,
   show_window_title = true,
   show_close_button = true,
+  stream = false,
 }: {
   api_key?: string;
   input_value: string,
@@ -78,6 +79,7 @@ export default function ChatWidget({
   auto_focus?: boolean;
   show_window_title?: boolean;
   show_close_button?: boolean;
+  stream?: boolean;
 }) {
   const [open, setOpen] = useState(
     display_mode === "inline" || start_open
@@ -98,14 +100,14 @@ export default function ChatWidget({
   // Parse additional_headers if it's a string (can happen when passed as HTML attribute)
   const parsedAdditionalHeaders = useMemo(() => parseAdditionalHeaders(additional_headers), [additional_headers]);
   
-  function updateLastMessage(message: ChatMessageType) {
-    setMessages((prev) => {
-      prev[prev.length - 1] = message;
-      return [...prev];
-    });
-  }
   function addMessage(message: ChatMessageType) {
     setMessages((prev) => [...prev, message]);
+  }
+  function patchMessage(id: string, patch: Partial<ChatMessageType>) {
+    setMessages((prev) => prev.map((item) => (item.id === id ? { ...item, ...patch } : item)));
+  }
+  function removeMessage(id: string) {
+    setMessages((prev) => prev.filter((item) => item.id !== id));
   }
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -897,6 +899,81 @@ video {
   text-align: left;
   --tw-text-opacity: 1;
   color: rgb(31 41 55 / var(--tw-text-opacity));
+}
+
+.cl-streaming::after {
+  content: "";
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.9em;
+  margin-left: 0.2rem;
+  vertical-align: text-bottom;
+  background: currentColor;
+  border-radius: 1px;
+  animation: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.cl-status-note {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: #b91c1c;
+}
+
+.cl-tool-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+  max-width: 100%;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+}
+
+.cl-tool-item {
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.55);
+  padding: 0.25rem 0.5rem;
+}
+
+.cl-tool-item summary {
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: baseline;
+}
+
+.cl-tool-name {
+  font-weight: 600;
+}
+
+.cl-tool-running {
+  color: #1d4ed8;
+}
+
+.cl-tool-completed {
+  color: #15803d;
+}
+
+.cl-tool-error {
+  color: #b91c1c;
+}
+
+.cl-tool-cancelled {
+  color: #4b5563;
+}
+
+.cl-tool-time {
+  color: #4b5563;
+}
+
+.cl-tool-body {
+  margin: 0.35rem 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
 }
 
 .origin-bottom {
@@ -2222,8 +2299,9 @@ input::-ms-input-placeholder { /* Microsoft Edge */
         tweaks={tweaks}
         flowId={flow_id}
         hostUrl={host_url}
-        updateLastMessage={updateLastMessage}
         addMessage={addMessage}
+        patchMessage={patchMessage}
+        removeMessage={removeMessage}
         messages={messages}
         triggerRef={triggerRef}
         position={chat_position}
@@ -2236,6 +2314,7 @@ input::-ms-input-placeholder { /* Microsoft Edge */
         showWindowTitle={show_window_title}
         showCloseButton={show_close_button}
         setOpen={setOpen}
+        stream={stream}
       />
     </div>
   );
