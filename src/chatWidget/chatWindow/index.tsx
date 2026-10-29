@@ -37,7 +37,14 @@ export default function ChatWindow({
   height = 650,
   tweaks,
   sessionId,
-  additional_headers
+  additional_headers,
+  initialMessage,
+  launchId,
+  displayMode = "floating",
+  autoFocus = true,
+  showWindowTitle = true,
+  showCloseButton = true,
+  setOpen,
 }: {
   api_key?: string;
   output_type: string,
@@ -70,35 +77,43 @@ export default function ChatWindow({
   height?: number;
   sessionId: React.MutableRefObject<string>;
   additional_headers?: { [key: string]: string };
+  initialMessage?: string;
+  launchId?: string;
+  displayMode?: string;
+  autoFocus?: boolean;
+  showWindowTitle?: boolean;
+  showCloseButton?: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 
 }) {
+  const isInline = displayMode === "inline";
   const [value, setValue] = useState<string>("");
   const ref = useRef<HTMLDivElement>(null);
   const lastMessage = useRef<HTMLDivElement>(null);
   const [windowPosition, setWindowPosition] = useState({ left: "0", top: "0" });
   const inputRef = useRef<HTMLInputElement>(null); /* User input Ref */
   useEffect(() => {
-    if (triggerRef)
+    if (displayMode !== "inline" && triggerRef && triggerRef.current)
       setWindowPosition(
         getChatPosition(
-          triggerRef.current!.getBoundingClientRect(),
+          triggerRef.current.getBoundingClientRect(),
           width,
           height,
           position
         )
       );
-  }, [triggerRef, width, height, position]);
+  }, [triggerRef, width, height, position, displayMode]);
 
   /* Initial listener for loss of focus that refocuses User input after a small delay */
 
   const [sendingMessage, setSendingMessage] = useState(false);
 
-  function handleClick() {
-    if (value && value.trim() !== "") {
-      addMessage({ message: value, isSend: true });
+  function handleClick(text: string = value) {
+    if (text && text.trim() !== "") {
+      addMessage({ message: text.trim(), isSend: true });
       setSendingMessage(true);
       setValue("");
-      sendMessage(hostUrl, flowId, value, input_type, output_type, sessionId, output_component, tweaks, api_key, additional_headers)
+      sendMessage(hostUrl, flowId, text.trim(), input_type, output_type, sessionId, output_component, tweaks, api_key, additional_headers)
         .then((res) => {
           if (
             res.data &&
@@ -173,6 +188,44 @@ export default function ChatWindow({
     }
   }
 
+  const lastLaunchId = useRef<string | undefined>(undefined);
+  const latestLaunchId = useRef(launchId);
+  const latestInitialMessage = useRef(initialMessage);
+  const handleClickRef = useRef(handleClick);
+  latestLaunchId.current = launchId;
+  latestInitialMessage.current = initialMessage;
+  handleClickRef.current = handleClick;
+
+  useEffect(() => {
+    if (!open || !launchId || !initialMessage?.trim()) {
+      return;
+    }
+
+    if (lastLaunchId.current === launchId) {
+      return;
+    }
+
+    const pendingLaunchId = launchId;
+    const timer = setTimeout(() => {
+      if (
+        latestLaunchId.current !== pendingLaunchId ||
+        lastLaunchId.current === pendingLaunchId
+      ) {
+        return;
+      }
+
+      const message = latestInitialMessage.current;
+      if (!message?.trim()) {
+        return;
+      }
+
+      lastLaunchId.current = pendingLaunchId;
+      handleClickRef.current(message);
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [open, launchId, initialMessage]);
+
   useEffect(() => {
     if (lastMessage.current)
       lastMessage.current.scrollIntoView({ behavior: "smooth" });
@@ -181,28 +234,102 @@ export default function ChatWindow({
   /* Refocus the User input whenever a new response is returned from the LLM */
 
   useEffect(() => {
-    // after a slight delay
-    setTimeout(() => {
+    if (!autoFocus) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
       inputRef.current?.focus();
     }, 100);
-  }, [messages, open]);
+
+    return () => window.clearTimeout(timer);
+  }, [messages, open, autoFocus]);
 
   return (
     <div
       className={
-        "cl-chat-window " +
-        getAnimationOrigin(position) +
-        (open ? " cl-scale-100" : " cl-scale-0")
+        isInline
+          ? "cl-chat-window"
+          : "cl-chat-window " +
+            getAnimationOrigin(position) +
+            (open ? " cl-scale-100" : " cl-scale-0")
       }
-      style={{ ...windowPosition, zIndex: 9999 }}
+      style={
+        isInline
+          ? {
+              position: "relative",
+              left: "auto",
+              top: "auto",
+              width: "100%",
+              maxWidth: "100%",
+              display: open ? "block" : "none",
+              zIndex: 9999,
+            }
+          : { ...windowPosition, zIndex: 9999 }
+      }
     >
       <div
-        style={{ ...chat_window_style, width: width, height: height }}
+        style={{
+          ...chat_window_style,
+          ...(isInline ? { borderRadius: 0 } : {}),
+          width: isInline ? "100%" : width,
+          maxWidth: isInline ? "100%" : undefined,
+          height: height,
+        }}
         ref={ref}
         className="cl-window"
       >
-        <div className="cl-header">
-          {window_title}
+        <div
+          className="cl-header"
+          style={
+            showWindowTitle
+              ? undefined
+              : {
+                  paddingTop: "0.5rem",
+                  paddingBottom: "0.5rem",
+                  fontSize: "0.875rem",
+                  lineHeight: "1.25rem",
+                  boxShadow: "none",
+                }
+          }
+        >
+          {isInline ? (
+            (showWindowTitle || showCloseButton) && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: showWindowTitle
+                    ? "space-between"
+                    : "flex-end",
+                  width: "100%",
+                  gap: "0.5rem",
+                }}
+              >
+                {showWindowTitle && <span>{window_title}</span>}
+                {showCloseButton && (
+                  <button
+                    type="button"
+                    aria-label="Close chat"
+                    onClick={() => setOpen(false)}
+                    style={{
+                      border: "none",
+                      background: "transparent",
+                      color: "rgb(107 114 128)",
+                      fontSize: "1.5rem",
+                      lineHeight: 1,
+                      padding: "0 0.25rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            )
+          ) : (
+            showWindowTitle && window_title
+          )}
           <div className="cl-header-subtitle">
             {online ? (
               <>
@@ -251,7 +378,7 @@ export default function ChatWindow({
           <button
             style={send_button_style}
             disabled={sendingMessage}
-            onClick={handleClick}
+            onClick={() => handleClick()}
           >
             <Send
               style={send_icon_style}

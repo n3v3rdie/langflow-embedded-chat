@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import ChatTrigger from "./chatTrigger";
 import ChatWindow from "./chatWindow";
 import { ChatMessageType } from "../types/chatWidget";
@@ -33,6 +33,13 @@ export default function ChatWidget({
   additional_headers,
   session_id,
   start_open=false,
+  initial_message,
+  launch_id,
+  display_mode = "floating",
+  open_id,
+  auto_focus = true,
+  show_window_title = true,
+  show_close_button = true,
 }: {
   api_key?: string;
   input_value: string,
@@ -63,8 +70,27 @@ export default function ChatWidget({
   additional_headers?: { [key: string]: string };
   session_id?: string;
   start_open?: boolean;
+  initial_message?: string;
+  launch_id?: string;
+  display_mode?: string;
+  open_id?: string;
+  auto_focus?: boolean;
+  show_window_title?: boolean;
+  show_close_button?: boolean;
 }) {
-  const [open, setOpen] = useState(start_open);
+  const [open, setOpen] = useState(
+    display_mode === "inline" || start_open
+  );
+  useEffect(() => {
+    if (launch_id) {
+      setOpen(true);
+    }
+  }, [launch_id]);
+  useEffect(() => {
+    if (open_id) {
+      setOpen(true);
+    }
+  }, [open_id]);
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const sessionId = useRef(session_id ?? uuidv4());
   function updateLastMessage(message: ChatMessageType) {
@@ -821,7 +847,9 @@ video {
   padding-right: 1rem;
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
-  text-align: right;
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
@@ -2139,14 +2167,31 @@ input::-ms-input-placeholder { /* Microsoft Edge */
   margin-top: 0 !important;
 }`
   return (
-    <div style={{ position: "relative" }}>
+    <div
+      style={
+        display_mode === "inline"
+          ? { position: "relative", width: "100%", maxWidth: "100%" }
+          : { position: "relative" }
+      }
+    >
+      {display_mode === "inline" && (
+        <style
+          dangerouslySetInnerHTML={{
+            __html:
+              ":host { display: block; width: 100%; max-width: 100%; }" +
+              ':host([auto_focus="false"]:focus), :host([auto_focus="false"]:focus-visible) { outline: none; }',
+          }}
+        ></style>
+      )}
       <style dangerouslySetInnerHTML={{ __html: styles + markdownBody }}></style>
-      <ChatTrigger
-        triggerRef={triggerRef}
-        open={open}
-        setOpen={setOpen}
-        style={chat_trigger_style}
-      />
+      {display_mode !== "inline" && (
+        <ChatTrigger
+          triggerRef={triggerRef}
+          open={open}
+          setOpen={setOpen}
+          style={chat_trigger_style}
+        />
+      )}
       <ChatWindow
         api_key={api_key}
         input_type={input_type}
@@ -2179,6 +2224,13 @@ input::-ms-input-placeholder { /* Microsoft Edge */
         position={chat_position}
         sessionId={sessionId}
         additional_headers={additional_headers}
+        initialMessage={initial_message}
+        launchId={launch_id}
+        displayMode={display_mode}
+        autoFocus={auto_focus}
+        showWindowTitle={show_window_title}
+        showCloseButton={show_close_button}
+        setOpen={setOpen}
       />
     </div>
   );
