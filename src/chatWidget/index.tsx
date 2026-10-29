@@ -920,60 +920,270 @@ video {
   color: #b91c1c;
 }
 
+.cl-bot_message.cl-has-tools,
+.cl-error_message.cl-has-tools {
+  width: 100%;
+}
+
+.cl-tool-trace {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0.1rem 0 0.55rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 0.7rem;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  color: #334155;
+  overflow: hidden;
+}
+
+.cl-tool-trace[data-phase="running"] {
+  border-color: rgba(37, 99, 235, 0.28);
+  background: #fff;
+}
+
+.cl-tool-toggle {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.48rem 0.62rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cl-tool-toggle:hover {
+  background: rgba(15, 23, 42, 0.035);
+}
+
+.cl-tool-toggle:focus-visible,
+.cl-tool-item summary:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: -2px;
+}
+
+.cl-tool-chevron {
+  flex: 0 0 auto;
+  color: #94a3b8;
+  transition: transform 0.16s ease;
+}
+
+.cl-tool-toggle[aria-expanded="true"] .cl-tool-chevron,
+.cl-tool-item[open] > .cl-tool-row .cl-tool-chevron {
+  transform: rotate(90deg);
+}
+
+.cl-tool-chevron-slot {
+  display: inline-flex;
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+  align-items: center;
+  justify-content: center;
+}
+
+.cl-tool-title {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: -0.011em;
+  color: #1e293b;
+}
+
+.cl-tool-meta {
+  flex: 0 0 auto;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: #64748b;
+}
+
+.cl-tool-meta-alert {
+  color: #b91c1c;
+}
+
+.cl-tool-dot {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  background: #94a3b8;
+}
+
+.cl-tool-dot-running {
+  background: #2563eb;
+  box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.45);
+  animation: cl-tool-pulse 1.4s ease-out infinite;
+}
+
+.cl-tool-dot-completed {
+  background: #16a34a;
+}
+
+.cl-tool-dot-error {
+  background: #dc2626;
+}
+
+.cl-tool-dot-cancelled {
+  background: #94a3b8;
+}
+
+@keyframes cl-tool-pulse {
+  70% {
+    box-shadow: 0 0 0 5px rgba(37, 99, 235, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  }
+}
+
 .cl-tool-list {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 0.5rem;
-  max-width: 100%;
-  font-size: 0.75rem;
-  line-height: 1.25rem;
+  gap: 0.12rem;
+  margin: 0;
+  padding: 0.28rem 0.28rem 0.35rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .cl-tool-item {
   border-radius: 0.5rem;
-  background: rgba(255, 255, 255, 0.55);
-  padding: 0.25rem 0.5rem;
 }
 
 .cl-tool-item summary {
-  cursor: pointer;
+  list-style: none;
+}
+
+.cl-tool-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.cl-tool-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  align-items: baseline;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 0.32rem 0.38rem;
+  border-radius: 0.45rem;
+  cursor: pointer;
+}
+
+.cl-tool-row:hover {
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.cl-tool-row-static {
+  cursor: default;
+}
+
+.cl-tool-row-static:hover {
+  background: transparent;
 }
 
 .cl-tool-name {
-  font-weight: 600;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #0f172a;
 }
 
-.cl-tool-running {
+.cl-tool-pill {
+  flex: 0 0 auto;
+  padding: 0.06rem 0.42rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.65rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cl-tool-pill-running {
+  background: #dbeafe;
   color: #1d4ed8;
 }
 
-.cl-tool-completed {
-  color: #15803d;
+.cl-tool-pill-completed {
+  background: #ecfdf3;
+  color: #166534;
 }
 
-.cl-tool-error {
+.cl-tool-pill-error {
+  background: #fef2f2;
   color: #b91c1c;
 }
 
-.cl-tool-cancelled {
-  color: #4b5563;
+.cl-tool-pill-cancelled {
+  background: #f1f5f9;
+  color: #64748b;
 }
 
-.cl-tool-time {
-  color: #4b5563;
+.cl-tool-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0 0.32rem 0.4rem;
+}
+
+.cl-tool-section {
+  border-radius: 0.45rem;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+.cl-tool-section-error {
+  background: #fff7f7;
+  border-color: rgba(185, 28, 28, 0.16);
+}
+
+.cl-tool-label {
+  display: block;
+  padding: 0.35rem 0.5rem 0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.cl-tool-section-error .cl-tool-label {
+  color: #b91c1c;
 }
 
 .cl-tool-body {
-  margin: 0.35rem 0 0;
+  margin: 0;
+  padding: 0.22rem 0.5rem 0.45rem;
+  max-height: 9.5rem;
+  overflow: auto;
   white-space: pre-wrap;
   word-break: break-word;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 11px;
+  line-height: 1.45;
+  color: #1e293b;
+}
+
+.cl-tool-section-error .cl-tool-body {
+  color: #991b1b;
 }
 
 .origin-bottom {

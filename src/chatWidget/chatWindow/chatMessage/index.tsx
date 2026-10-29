@@ -17,7 +17,7 @@ export default function ChatMessage({
   error_message_style,
 }: ChatMessageType) {
   const streaming = status === "streaming";
-  const toolList = tools && tools.length > 0 ? <ToolTrace tools={tools} /> : null;
+  const toolList = tools && tools.length > 0 ? <ToolTrace tools={tools} live={streaming} /> : null;
 
   return (
     <div
@@ -30,12 +30,15 @@ export default function ChatMessage({
           {message}
         </div>
       ) : error ? (
-        <div style={error_message_style} className={"cl-error_message"}>
+        <div
+          style={error_message_style}
+          className={"cl-error_message" + (toolList ? " cl-has-tools" : "")}
+        >
           {toolList}
           {message}
         </div>
       ) : (
-        <div style={bot_message_style} className={"cl-bot_message"}>
+        <div style={bot_message_style} className={"cl-bot_message" + (toolList ? " cl-has-tools" : "")}>
           {toolList}
           {message ? (
             <Markdown

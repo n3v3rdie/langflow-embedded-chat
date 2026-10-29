@@ -123,6 +123,7 @@ Use the widget API to customize your widget:
 | width                 | number    | No       |
 | window_title          | string    | No       |
 | session_id            | string    | No       |
+| stream                | boolean   | No       |
 | additional_headers    | json      | No       |
 
 **api_key:**
@@ -280,6 +281,13 @@ Use the widget API to customize your widget:
 - Required: No
 - Description: Custom session id to override the random session id used as default.
 - Example: "user-session-001"
+
+**stream:**
+- Type: Boolean
+- Required: No
+- Default: false
+- Description: When true, the widget calls the Langflow run endpoint with `stream=true` and renders the assistant reply as tokens arrive. Tool calls from the stream are shown while the reply is in progress, then collapse into a single block that can be expanded to inspect each tool.
+- Example: true
 
 **additional_headers:**
 - Type: JSON
